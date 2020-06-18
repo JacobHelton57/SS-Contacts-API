@@ -12,7 +12,18 @@ namespace SS_Contacts_API.Controllers
 {
     public class ContactsController : ApiController
     {
-        string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["LiteDB"].ConnectionString;
+
+        private string connectionString;
+
+        public ContactsController()
+        {
+            connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["LiteDB"].ConnectionString;
+        }
+
+        public ContactsController(string connectionString)
+        {
+            this.connectionString = connectionString;
+        }
 
         // GET: contacts
         public IHttpActionResult GetAllContacts()
@@ -140,23 +151,29 @@ namespace SS_Contacts_API.Controllers
             // Validate phone types
             string[] validPhoneTypes = { "home", "work", "mobile" };
 
-            foreach (Phone phone in contact.Phone)
-            {
-                if (!validPhoneTypes.Contains(phone.Type))
+            if (contact.Phone != null) {
+                foreach (Phone phone in contact.Phone)
                 {
-                    return false;
+                    if (!validPhoneTypes.Contains(phone.Type))
+                    {
+                        return false;
+                    }
                 }
             }
 
+
             // Validate email by using MailAddress constructor 
             // Note: This method is not 100% accurate but catches ~most~ cases w/o using regex
-            try
+            if (contact.Email != null)
             {
-                MailAddress m = new MailAddress(contact.Email);
-            }
-            catch (FormatException)
-            {
-                return false;
+                try
+                {
+                    MailAddress m = new MailAddress(contact.Email);
+                }
+                catch (FormatException)
+                {
+                    return false;
+                }
             }
 
             return true;
